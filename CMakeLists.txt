@@ -20,8 +20,7 @@ include(FetchContent)
 
 FetchContent_Declare(TgBot
   GIT_REPOSITORY https://github.com/reo7sp/tgbot-cpp.git
-  GIT_TAG        v1.9.1
-  GIT_SHALLOW    TRUE
+  GIT_TAG        v1.10
 )
 FetchContent_MakeAvailable(TgBot)
 
@@ -33,11 +32,12 @@ FetchContent_MakeAvailable(sqlite_orm)
 
 add_executable(sm2_bot
   src/main.cpp
+  src/tg/TelegramHandler.cpp
 )
 set_target_properties(sm2_bot PROPERTIES OUTPUT_NAME "sm2_bot")
 
-target_include_directories(BellumNavale PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_include_directories(BellumNavale PRIVATE ${CMAKE_BINARY_DIR}/include        )
+target_include_directories(sm2_bot PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(sm2_bot PRIVATE ${CMAKE_BINARY_DIR}/include        )
 
 target_link_libraries(sm2_bot PRIVATE TgBot                 )
 target_link_libraries(sm2_bot PRIVATE sqlite_orm::sqlite_orm)

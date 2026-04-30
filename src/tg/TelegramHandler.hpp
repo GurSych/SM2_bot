@@ -2,8 +2,58 @@
 #define SM2_BOT_SRC_TG_TELEGRAMHANDLER_HPP
 #pragma once
 
+#include <type_traits>
+#include <cstdint>
+#include <string>
+#include <tgbot/tgbot.h>
+namespace tgb = TgBot;
+
 namespace tg {
-    // Boo~!
+    using chat_id_t = std::int64_t;
+    enum class MDMode {
+        PLAIN, BOLD, ITALIC, UNDERLINE, STRIKETHROUGH, SPOILER, CODE, TEXT
+    };
+    class markdown_string {
+    public:
+        markdown_string()  = default;
+        markdown_string(const std::string& str) : text{markdown_escape(str)} {}
+        ~markdown_string() = default;
+
+        template<typename... MDs>
+        requires (std::is_same_v<MDs, tg::MDMode> && ...)
+        void add(const std::string& str, MDs... modes);
+
+        void operator+=(const std::string& str);
+
+        static std::string markdown_escape(const std::string& str);
+        static std::string markdown_apply (const std::string& str, MDMode mode);
+
+        std::string&       get_text()       { return text; }
+        const std::string& get_text() const { return text; }
+
+    private:
+        std::string text{};
+    };
+    class TelegramHandler {
+    public:
+        TelegramHandler(std::string token);
+        ~TelegramHandler() = default;
+
+        tgb::Bot& getBot() { return bot; }
+
+        void run_polling();
+
+        void send_message (chat_id_t chat_id, const markdown_string& text);
+        void send_markdown(chat_id_t chat_id, const markdown_string& text);
+
+        void send_message (chat_id_t chat_id, const std::string& text);
+        void send_markdown(chat_id_t chat_id, const std::string& text);
+
+        void start_command(tgb::Message::Ptr message);
+
+    private:
+        tgb::Bot bot;
+    };
 }
 
 #endif // SM2_BOT_SRC_TG_TELEGRAMHANDLER_HPP
