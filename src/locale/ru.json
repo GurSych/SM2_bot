@@ -6,10 +6,17 @@
         "language-flag": "🇷🇺"
     },
     "dictionary": {
+        "query.cant-handle[query]": "Я не могу обработать это",
+        "query.unknown[query]": "Неизвестная команда",
+        "universal.registartion-ask": "Пожалуйста, зарегистрируйтесь через команду /start, чтобы использовать этот бот",
         "start.welcome[BOLD]": "Добро пожаловать!",
         "start.registration-success": "Вы успешно зарегистрированы!",
         "start.registrated-id[1]": "Вы уже зарегистрированы\n",
         "start.registrated-id[2|ITALIC]": "Ваш внутренний ID в базе данных: ",
-        "start.id-collision-error": "Ошибка: пользователь с таким ID уже существует в базе данных."
+        "start.id-collision-error": "Ошибка: пользователь с таким ID уже существует в базе данных.",
+        "change-language.message": "Выберите язык",
+        "change-language.success[query]": "Язык успешно изменен!",
+        "change-language.error[query]": "Ошибка изменения языка.",
+        "change-language.choice": "Язык изменен на Русский 🇷🇺"
     }
 }

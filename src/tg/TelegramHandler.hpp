@@ -51,11 +51,15 @@ namespace tg {
 
         void send_message (chat_id_t chat_id, const markdown_string& text);
         void send_markdown(chat_id_t chat_id, const markdown_string& text);
+        void send_markdown(chat_id_t chat_id, const markdown_string& text, const tgb::InlineKeyboardMarkup::Ptr& keyboard);
 
         void send_message (chat_id_t chat_id, const std::string& text);
         void send_markdown(chat_id_t chat_id, const std::string& text);
 
-        void start_command(tgb::Message::Ptr message);
+        void start_command  (tgb::Message::Ptr message);
+        void change_language(tgb::Message::Ptr message);
+
+        void change_language_query(tgb::CallbackQuery::Ptr query, const std::string& language_code);
 
     private:
         tgb::Bot bot;

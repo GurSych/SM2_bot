@@ -1,6 +1,8 @@
 #include "TelegramHandler.hpp"
 
-#include <chrono>
+#include <iostream>
+#include <vector>
+#include "../tools/StringTools.hpp"
 #include "../tools/TimeTools.hpp"
 #include "../db/ORMClasses.hpp"
 
@@ -8,6 +10,33 @@ tg::TelegramHandler::TelegramHandler(std::string token, db::DatabaseHandler& db,
     : bot{token}, db{db}, lang_handler{lang_handler} {
     bot.getEvents().onCommand("start", [this](tgb::Message::Ptr message) {
         start_command(message);
+    });
+    bot.getEvents().onCommand("language", [this](tgb::Message::Ptr message) {
+        change_language(message);
+    });
+    bot.getEvents().onCallbackQuery([this, &db, &lang_handler](tgb::CallbackQuery::Ptr query) {
+        try {
+            bot.getApi().answerCallbackQuery(query->id);
+        } catch (const std::exception& e) {
+            std::cerr << "Callback answer failed: " << e.what() << std::endl;
+            return;
+        }
+        std::clog << "CallbackQuery: " << query->data << " from (" << query->message->chat->id << ")" << std::endl;
+        auto user = db.get_storage().get_all<orm::User>(sql::where(sql::c(&orm::User::telegram_id) == query->message->chat->id));
+        auto data = strtools::split(query->data, ':');
+        if (user.empty()) {
+            send_message(query->message->chat->id, lang_handler.localize("universal.registartion-ask", "en"));
+            return;
+        }
+        if (data.size() >= 2 && data[0] == "v1") {
+            if (data[1] == "lang-change") {
+                change_language_query(query, data[2]);
+            } else {
+                send_message(query->message->chat->id, lang_handler.localize("query.unknown[query]", user[0].language));
+            }
+        } else {
+            send_message(query->message->chat->id, lang_handler.localize("query.cant-handle[query]", user[0].language));
+        }
     });
 }
 
@@ -30,6 +59,9 @@ void tg::TelegramHandler::send_message(tg::chat_id_t chat_id, const tg::markdown
 }
 void tg::TelegramHandler::send_markdown(tg::chat_id_t chat_id, const tg::markdown_string& text) {
     bot.getApi().sendMessage(chat_id, text.get_text(), nullptr, nullptr, nullptr, "MarkdownV2");
+}
+void tg::TelegramHandler::send_markdown(tg::chat_id_t chat_id, const tg::markdown_string& text, const tgb::InlineKeyboardMarkup::Ptr& keyboard) {
+    bot.getApi().sendMessage(chat_id, text.get_text(), nullptr, nullptr, keyboard, "MarkdownV2");
 }
 
 void tg::TelegramHandler::send_message(tg::chat_id_t chat_id, const std::string& text) {
@@ -91,17 +123,17 @@ std::string tg::markdown_string::markdown_apply(const std::string_view str, MDMo
 void tg::TelegramHandler::start_command(tgb::Message::Ptr message) {
     auto user = db.get_storage().get_all<orm::User>(sql::where(sql::c(&orm::User::telegram_id) == message->chat->id));
     tg::markdown_string md_str{};
-    md_str.add(lang_handler.localize("start.welcome[BOLD]", (user.size() == 1 ? user[0].language : "en")), tg::MDMode::BOLD);
+    md_str.add(lang_handler.localize("start.welcome[BOLD]", (!user.empty() ? user.front().language : "en")), tg::MDMode::BOLD);
     send_markdown(message->chat->id, md_str);
     md_str.clear();
-    if (user.size() == 1) {
-        md_str.add(lang_handler.localize("start.registrated-id[1]", user[0].language));
-        md_str.add(lang_handler.localize("start.registrated-id[2|ITALIC]", user[0].language), tg::MDMode::ITALIC);
-        md_str.add(std::to_string(user[0].id), tg::MDMode::CODE);
+    if (!user.empty()) {
+        md_str.add(lang_handler.localize("start.registrated-id[1]", user.front().language));
+        md_str.add(lang_handler.localize("start.registrated-id[2|ITALIC]", user.front().language), tg::MDMode::ITALIC);
+        md_str.add(std::to_string(user.front().id), tg::MDMode::CODE);
         send_markdown(message->chat->id, md_str);
-        std::clog << "||Old user (" << user[0].id << ") - "
-            << user[0].username << "(" << user[0].telegram_id << ") " << user[0].language
-            << " /" << user[0].created_at << std::endl;
+        std::clog << "||Old user (" << user.front().id << ") - "
+            << user.front().username << "(" << user.front().telegram_id << ") " << user.front().language
+            << " /" << user.front().created_at << std::endl;
         return;
     }
     auto now = timetools::get_current_time();
@@ -123,4 +155,35 @@ void tg::TelegramHandler::start_command(tgb::Message::Ptr message) {
     std::clog << "||New user (" << db_id << ") - "
         << user_to_insert.username << "(" << user_to_insert.telegram_id << ") " << user_to_insert.language
         << " /" << user_to_insert.created_at << std::endl;
+}
+void tg::TelegramHandler::change_language(tgb::Message::Ptr message) {
+    auto user = db.get_storage().get_all<orm::User>(sql::where(sql::c(&orm::User::telegram_id) == message->chat->id));
+    tg::markdown_string md_str{};
+    if (user.empty()) {
+        md_str.add(lang_handler.localize("universal.registartion-ask", "en"));
+        send_markdown(message->chat->id, md_str);
+        return;
+    }
+    md_str.add(lang_handler.localize("change-language.message", user.front().language));
+    tgb::InlineKeyboardMarkup::Ptr keyboard{new tgb::InlineKeyboardMarkup{}};
+    for (auto lang_iter = lang_handler.get_dictionary().begin(); lang_iter != lang_handler.get_dictionary().end(); ++lang_iter) {
+        std::vector<tgb::InlineKeyboardButton::Ptr> row{};
+        tgb::InlineKeyboardButton::Ptr lang_button{new tgb::InlineKeyboardButton{}};
+        lang_button->text = lang_iter->second.first.name + " " + lang_iter->second.first.flag;
+        lang_button->callbackData = std::string{"v1:lang-change:"} + lang_iter->second.first.code;
+        row.push_back(lang_button);
+        keyboard->inlineKeyboard.push_back(row);
+    }
+    send_markdown(message->chat->id, md_str, keyboard);
+}
+void tg::TelegramHandler::change_language_query(tgb::CallbackQuery::Ptr query, const std::string& language_code) {
+    auto user = db.get_storage().get_all<orm::User>(sql::where(sql::c(&orm::User::telegram_id) == query->message->chat->id));
+    if (user.empty()) { return; }
+    user.front().language = language_code;
+    db.get_storage().update(user.front());
+    //bot.getApi().answerCallbackQuery(query->id, lang_handler.localize("change-language.success[query]", language_code));
+    bot.getApi().editMessageText(
+        lang_handler.localize("change-language.choice", language_code),
+        query->message->chat->id, query->message->messageId, "", "", nullptr, nullptr
+    );
 }

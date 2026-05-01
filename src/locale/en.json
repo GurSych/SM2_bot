@@ -6,10 +6,17 @@
         "language-flag": "🇬🇧"
     },
     "dictionary": {
+        "query.cant-handle[query]": "I can't handle that",
+        "query.unknown[query]": "Unknown command",
+        "universal.registartion-ask": "Please register via /start command to use this bot",
         "start.welcome[BOLD]": "Welcome here!",
         "start.registration-success": "You have successfully registered!",
         "start.registrated-id[1]": "You have already registered\n",
         "start.registrated-id[2|ITALIC]": "Your internal ID in the database: ",
-        "start.id-collision-error": "Error: a user with this ID already exists in the database."
+        "start.id-collision-error": "Error: a user with this ID already exists in the database.",
+        "change-language.message": "Choose language",
+        "change-language.success[query]": "Language successfully changed!",
+        "change-language.error[query]": "Error changing language.",
+        "change-language.choice": "Language changed to English 🇬🇧"
     }
 }
