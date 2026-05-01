@@ -12,6 +12,7 @@
 - SQLite
 - reo7sp/tgbot-cpp library (for Telegram bot)
 - fnc12/sqlite_orm library (for SQLite database)
+- nlohmann/json library (for json)
 - CMake
 
 ## Project structure:
