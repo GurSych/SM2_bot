@@ -23,7 +23,9 @@
     │  │  └─ ...
     │  ├─ tg/                          Telegram bot handling files
     │  │  └─ ...
-    │  ├─ .env                         Environment 
-    │  ├─ config.hpp.in                CMake configurated config defines header
+    │  ├─ tools/                       Tools files
+    │  │  └─ ...
+    │  ├─ .env                         Environment file
+    │  ├─ config.hpp.in                Config defines header file
     │  └─ main.cpp                     Main program file
     └─ CMakeLists.txt                  CMake configuration file

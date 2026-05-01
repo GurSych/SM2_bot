@@ -33,11 +33,19 @@ FetchContent_MakeAvailable(sqlite_orm)
 add_executable(sm2_bot
   src/main.cpp
   src/tg/TelegramHandler.cpp
+  src/tg/LanguageHandler.cpp
+  src/db/DatabaseHandler.cpp
 )
 set_target_properties(sm2_bot PROPERTIES OUTPUT_NAME "sm2_bot")
+
+FetchContent_Declare(json
+    URL https://github.com/nlohmann/json/releases/download/v3.12.0/json.tar.xz
+)
+FetchContent_MakeAvailable(json)
 
 target_include_directories(sm2_bot PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_include_directories(sm2_bot PRIVATE ${CMAKE_BINARY_DIR}/include        )
 
-target_link_libraries(sm2_bot PRIVATE TgBot                 )
-target_link_libraries(sm2_bot PRIVATE sqlite_orm::sqlite_orm)
+target_link_libraries(sm2_bot PRIVATE TgBot                       )
+target_link_libraries(sm2_bot PRIVATE sqlite_orm::sqlite_orm      )
+target_link_libraries(sm2_bot PRIVATE nlohmann_json::nlohmann_json)

@@ -1,0 +1,15 @@
+{
+    "data": {
+        "language-status": "complete",
+        "language-code": "en",
+        "language-name": "English",
+        "language-flag": "🇬🇧"
+    },
+    "dictionary": {
+        "start.welcome[BOLD]": "Welcome here!",
+        "start.registration-success": "You have successfully registered!",
+        "start.registrated-id[1]": "You have already registered\n",
+        "start.registrated-id[2|ITALIC]": "Your internal ID in the database: ",
+        "start.id-collision-error": "Error: a user with this ID already exists in the database."
+    }
+}

@@ -2,3 +2,5 @@
 .env
 # Local CMake Build
 build/
+# Database
+test_database.db
