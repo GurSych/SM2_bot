@@ -2,6 +2,7 @@
 #define SM2_BOT_SRC_DB_DATABASEHANDLER_HPP
 #pragma once
 
+#include <cstdint>
 #include <string>
 #include <sqlite_orm/sqlite_orm.h>
 namespace sql = sqlite_orm;
@@ -33,6 +34,8 @@ namespace db {
 
         sql_storage_t&     get_storage()       { return storage_; }
         const std::string& get_db_path() const { return db_path_; }
+
+        orm::User get_user_by_id(uint64_t id);
 
     private:
         std::string db_path_;
